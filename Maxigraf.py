@@ -122,12 +122,12 @@ def pipe_server():
                 print(some_data)
                 win32file.WriteFile(pipe, some_data)
 
-            elif mes == "Set new Value":
+            elif mes == "pusk":
 
                 # Получение диапазона, если он не задан
                 get_range()
 
-                '''
+                
                 # Ставим шаблон
                 comand = str.encode(f"LoadLE", encoding = 'UTF-8')
                 print(comand)
@@ -147,20 +147,33 @@ def pipe_server():
                   
                 print('Result: ' + msg)   
                 sleep(1)
-                '''
+                
                 
         
                 counter = start_range  # Устанавливаем начальное значение счетчика
 
                 while counter <= end_range:
                     if not pause_event.is_set():  # Если пауза не активна
+                        #cut = str.encode(f"Start mark", encoding = 'UTF-8')
+                        #win32file.WriteFile(pipe, cut)
                         some_data = str.encode(f"Set new Value", encoding='UTF-8')
                         win32file.WriteFile(pipe, some_data)
+                        pause_event.wait(1)
                         some_data = str.encode(f"Textblock1.Data=ID_{counter}", encoding='UTF-8')
                         win32file.WriteFile(pipe, some_data)
                         print(f"Sent value_{counter}")
                         counter += 1
-                        pause_event.wait(1)  # Задержка между отправками (1 секунда)
+                        pause_event.wait(2)
+
+
+                        #cut = str.encode(f"Start mark", encoding = 'UTF-8')
+                        #win32file.WriteFile(pipe, cut)
+                        #pause_event.wait(7)
+                        
+                        pause_event.wait(7)  # Задержка между отправками (1 секунда)
+                        print('режем')
+                        cut = str.encode(f"Start mark", encoding = 'UTF-8')
+                        win32file.WriteFile(pipe, cut)
                     else:
                         pause_event.wait()  # Ждать, пока пауза не будет снята
 
@@ -353,7 +366,7 @@ if __name__ == '__main__':
     x = threading.Thread(target=thread_start)  
     x.start()
 
-    time.sleep(7)
+    time.sleep(15)
 
     #pipe_server()
     server_thread = threading.Thread(target=pipe_server)
