@@ -1,3 +1,8 @@
+from elevate import elevate
+
+# Запросить права администратора
+elevate()
+
 import tkinter as tk
 from tkinter import filedialog
 import time
