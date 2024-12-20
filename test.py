@@ -41,11 +41,11 @@ if __name__ == "__main__":
     client_process = multiprocessing.Process(target=client, args=(pipe_client_conn,))
 
     # Запускаем сервер и клиент
-    #server_process.start()
+    server_process.start()
     client_process.start()
 
     # Ждем завершения процессов
-    #server_process.join()
+    server_process.join()
     client_process.join()
 
     print("[MAIN] Завершение работы программы.")
