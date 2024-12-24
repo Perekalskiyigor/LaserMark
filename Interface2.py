@@ -180,6 +180,15 @@ def cutting_process(new_value):
             
             update_message(f"Переместить стол на {new_value}")
             print(f"Переместить стол на {new_value}")
+
+            '''
+            # Команда резка
+            some_data = str.encode(f"Start mark", encoding='UTF-8')
+            win32file.WriteFile(pipe, some_data)
+            message.config(text="")  # Устанавливаем пустую строку, чтобы очистить текущий текст
+            message.config(text=f"Начать резку")
+
+            '''
         else:  # Нечетная итерация
             # Команда на перемещение
             some_data_cmd = str.encode("Set new Value", encoding='UTF-8')
@@ -190,6 +199,15 @@ def cutting_process(new_value):
             update_message("Переместить стол на 0")
             print("Переместить стол на 0")
 
+            '''
+            # Команда резка
+            some_data = str.encode(f"Start mark", encoding='UTF-8')
+            win32file.WriteFile(pipe, some_data)
+            message.config(text="")  # Устанавливаем пустую строку, чтобы очистить текущий текст
+            message.config(text=f"Начать резку")
+
+            '''
+            
 # Обновляем поля интрефейса    
 def update_message(text):
     # Обновляем текст в метке из основного потока
