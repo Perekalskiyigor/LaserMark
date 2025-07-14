@@ -391,44 +391,65 @@ def cutting_processPLM_FRONT(new_value):
             
             
 
-            
-            # Цикл проверки. что оборудование подключено и данные мы получаем
-            ####################
-            while True:  
-                
-                # Симуляция получения данных
-                # response, data = win32file.ReadFile(pipe, 4096)  # 4096 - размер буфера
-                #if response == 0:  # NO_ERROR
-                #decoded_data = data.decode('UTF-8')  # Декодируем в строку
-                #print("Ответ от сервера:", decoded_data)
-                if "ErrorFromControler" in message1:  # Если нет ошибок. все хорошо идем дальше
-                    status_cutting_plm.config(text=f"Нет соединения с маркировщиком", fg="red",font=("Arial", 9))
-                    print("Оборудование отключено Ждем данные...")
-                    toggle_button.config(state="normal")
-                    if stop == True:
-                        print (f"нажата кнопка стоп")
-                        logging.info(f"Press button stop Cycle cutting")
-                        return
-                else:
+
+            ##########################*****
+            # Очищаем message1 перед началом ожидания
+            message1 = ""
+
+            # Таймаут ожидания гравировки (секунды)
+            timeout = 120  
+            start_time = time.time()
+
+            # Флаг успешного завершения
+            marking_success = False
+
+            logging.info("Ожидание завершения гравировки...")
+
+            while True:
+                # 1. Проверяем таймаут
+                if time.time() - start_time > timeout:
+                    logging.error("Таймаут ожидания гравировки! Превышено время ожидания.")
+                    print(f"Таймаут ожидания гравировки! Превышено время ожидания.")
+                    status_cutting_plm.config(text="Ошибка: таймаут гравировки", fg="red")
                     break
-                time.sleep(1)  # Ожидание перед повторной попыткой
-            ####################
 
-            # Проверяем, завершилась ли операция маркировки успешно первая
-            while "MarkingCompletedSuccessfully" not in message1:
-                print("Ожидаем завершения гравировки...")
+                # 2. Получаем актуальный статус (замените на ваш способ чтения данных)
+                # Пример: message1 = read_from_serial_port()  
+                # Или: message1 = get_latest_marking_status()  
+
+                # 3. Проверяем успешное завершение
+                if "CompletedSuccessfully" in message1 or message1.find("CompletedSuccessfully") != -1:
+                    logging.info(f"Гравировка завершена успешно! Ответ оборудования: {message1}")
+                    print(f"Гравировка завершена успешно! Ответ оборудования: {message1}")
+                    marking_success = True
+                    break
+
+                # 4. Проверяем ошибки
+                elif "ErrorFromControler" in message1 or "Error" in message1:
+                    logging.error(f"Ошибка гравировки: {message1}")
+                    print(f"Ошибка гравировки: {message1}")
+                    status_cutting_plm.config(text="Ошибка гравировки!", fg="red")
+                    break
+
+                # 5. Если статус не ясен, ждём 1 сек и повторяем
                 time.sleep(1)
-                status_cutting_plm.config(text=f"Гравировка {i} детали завершена", fg="green",font=("Arial", 9))
+                print("Ожидаем завершения гравировки...")
+                print(f"Получаем сообщение {message1}")
 
-            # Если успешно ставим пометку в базе данныхх для серийника
-            if "MarkingCompletedSuccessfully" in message1:         
-                # Помечаем как промаркированный сделт в проверке
-                logging.info(f"Main - {i}Front side Mark succesfully")
+            # Очищаем message1 после выхода из цикла
+            message1 = ""
 
+            if marking_success:
+                logging.info(f"Деталь {i} успешно промаркирована!")
+                status_cutting_plm.config(text=f"Гравировка {i} завершена", fg="green")
             else:
-                logging.warning(f"Main - Error {i}Front side Mark")
-            
-            
+                logging.warning(f"Гравировка детали {i} не удалась!")
+                # Дополнительные действия при ошибке...
+            ##########################*****
+
+
+
+ 
 
 
         # Нечетная итерация цикла гравировки
@@ -474,48 +495,61 @@ def cutting_processPLM_FRONT(new_value):
             print(f"*****-{message1}")
             time.sleep(1)
             
-            ####################
-            while True:  
-                
-                # Симуляция получения данных
-                # response, data = win32file.ReadFile(pipe, 4096)  # 4096 - размер буфера
-                #if response == 0:  # NO_ERROR
-                #decoded_data = data.decode('UTF-8')  # Декодируем в строку
-                #print("Ответ от сервера:", decoded_data)
-                if "ErrorFromControler" in message1:  # Если нет ошибок. все хорошо идем дальше
-                    status_cutting_plm.config(text=f"Нет соединения с маркировщиком", fg="red",font=("Arial", 9))
-                    print("Оборудование отключено Ждем данные...")
-                    toggle_button.config(state="normal")
-                    if stop == True:
-                        print (f"нажата кнопка стоп")
-                        logging.info(f"Press button stop Cycle cutting")
-                        return
-                else:
-                    print("Оборудование отключено Ждем данные...")
+            ##########################*****
+            # Очищаем message1 перед началом ожидания
+            message1 = ""
+
+            # Таймаут ожидания гравировки (секунды)
+            timeout = 120  
+            start_time = time.time()
+
+            # Флаг успешного завершения
+            marking_success = False
+
+            logging.info("Ожидание завершения гравировки...")
+
+            while True:
+                # 1. Проверяем таймаут
+                if time.time() - start_time > timeout:
+                    logging.error("Таймаут ожидания гравировки! Превышено время ожидания.")
+                    print(f"Таймаут ожидания гравировки! Превышено время ожидания.")
+                    status_cutting_plm.config(text="Ошибка: таймаут гравировки", fg="red")
                     break
-                    
-                time.sleep(1)  # Ожидание перед повторной попыткой
-            ####################
 
-            # Проверяем, завершилась ли операция маркировки успешно первая
-            while "MarkingCompletedSuccessfully" not in message1:
-                print("Ожидаем завершения гравировки...")
+                # 2. Получаем актуальный статус (замените на ваш способ чтения данных)
+                # Пример: message1 = read_from_serial_port()  
+                # Или: message1 = get_latest_marking_status()  
+
+                # 3. Проверяем успешное завершение
+                if "CompletedSuccessfully" in message1 or message1.find("CompletedSuccessfully") != -1:
+                    logging.info(f"Гравировка завершена успешно! Ответ оборудования: {message1}")
+                    print(f"Гравировка завершена успешно! Ответ оборудования: {message1}")
+                    marking_success = True
+                    break
+
+                # 4. Проверяем ошибки
+                elif "ErrorFromControler" in message1 or "Error" in message1:
+                    logging.error(f"Ошибка гравировки: {message1}")
+                    print(f"Ошибка гравировки: {message1}")
+                    status_cutting_plm.config(text="Ошибка гравировки!", fg="red")
+                    break
+
+                # 5. Если статус не ясен, ждём 1 сек и повторяем
                 time.sleep(1)
-                status_cutting_plm.config(text=f"Гравировка {i} детали завершена", fg="green",font=("Arial", 9))
+                print("Ожидаем завершения гравировки...")
+                print(f"Получаем сообщение {message1}")
 
-            # Если успешно ставим пометку в базе данныхх для серийника
-            if "MarkingCompletedSuccessfully" in message1:         
-                # Помечаем как промаркированный сделт в проверке
-                logging.info(f"Main - {i}Front side Mark succesfully")
+            # Очищаем message1 после выхода из цикла
+            message1 = ""
 
+            if marking_success:
+                logging.info(f"Деталь {i} успешно промаркирована!")
+                status_cutting_plm.config(text=f"Гравировка {i} завершена", fg="green")
             else:
-                logging.warning(f"Main - Error {i}Front side Mark")
-            
-            
-            
+                logging.warning(f"Гравировка детали {i} не удалась!")
+                # Дополнительные действия при ошибке...
+            ##########################*****
 
-
-        message1 = ""
     print(f"/////////////FINISH////////////гравировка деталей завершена {message1}")
 
 
@@ -641,7 +675,7 @@ def cutting_processPLM(new_value):
             # Поле Серия
             some_data_cmd = str.encode(f"Set new Value", encoding='UTF-8')
             win32file.WriteFile(pipe, some_data_cmd)
-            some_data_cmd = str.encode(f"Marking\\Series.Text={Seria}", encoding='UTF-8')
+            some_data_cmd = str.encode(f"Marking\\Series.Text=S {Seria}", encoding='UTF-8')
             win32file.WriteFile(pipe, some_data_cmd)
             
 
@@ -688,7 +722,7 @@ def cutting_processPLM(new_value):
             # Поле Number код
             some_data_cmd = str.encode(f"Set new Value", encoding='UTF-8')
             win32file.WriteFile(pipe, some_data_cmd)
-            some_data_cmd = str.encode(f"Marking\\NumberSerial.Text={NumberSerial}", encoding='UTF-8')
+            some_data_cmd = str.encode(f"Marking\\NumberSerial.Text=N {NumberSerial}", encoding='UTF-8')
             win32file.WriteFile(pipe, some_data_cmd)
         
             
@@ -719,57 +753,79 @@ def cutting_processPLM(new_value):
             # print(f"*****-{message1}")
             time.sleep(1)
             
-            
+            ##########################*****
+            # Очищаем message1 перед началом ожидания
+            message1 = ""
 
-            
-            # Цикл проверки. что оборудование подключено и данные мы получаем
-            ####################
-            while True:  
+            # Таймаут ожидания гравировки (секунды)
+            timeout = 120  
+            start_time = time.time()
+
+            # Флаг успешного завершения
+            marking_success = False
+
+            logging.info("Ожидание завершения гравировки...")
+
+            while True:
+                """
+                # 1. Проверяем таймаут
+                if time.time() - start_time > timeout:
+                    logging.error("Таймаут ожидания гравировки! Превышено время ожидания.")
+                    print(f"Таймаут ожидания гравировки! Превышено время ожидания.")
+                    status_cutting_plm.config(text="Ошибка: таймаут гравировки", fg="red")
+                    break
+                """
                 
-                # Симуляция получения данных
-                # response, data = win32file.ReadFile(pipe, 4096)  # 4096 - размер буфера
-                #if response == 0:  # NO_ERROR
-                #decoded_data = data.decode('UTF-8')  # Декодируем в строку
-                #print("Ответ от сервера:", decoded_data)
-                if "ErrorFromControler" in message1:  # Если нет ошибок. все хорошо идем дальше
-                    status_cutting_plm.config(text=f"Нет соединения с маркировщиком", fg="red",font=("Arial", 9))
+
+                # 2. Получаем актуальный статус (замените на ваш способ чтения данных)
+                # Пример: message1 = read_from_serial_port()  
+                # Или: message1 = get_latest_marking_status()  
+
+                # 3. Проверяем успешное завершение
+                if "CompletedSuccessfully" in message1 or message1.find("CompletedSuccessfully") != -1:
+                    logging.info(f"Гравировка завершена успешно! Ответ оборудования: {message1}")
+                    print(f"Гравировка завершена успешно! Ответ оборудования: {message1}")
+                    marking_success = True
+
+                    # Обновляем статус
+                    status_cutting_plm.config(text=f"{i} иттерация завершена", fg="green", font=("Arial", 9))
+                    
+                    # Помечаем как промаркированный сделт в проверке
+                    SQLSerialProvider.updateMark(id_serial, login_user)
+                    logging.info(f"Main - Sent 1 to Mark in DB id={id_serial}")
+                    time.sleep(1)
+                    SentLog1C.sent_result_To1C(id_serial)
+                    
+                    status_cutting_plm.config(text=f"Гравировка {i} детали завершена", fg="green", font=("Arial", 9))
+                    break
+
+                # 4. Проверяем ошибки
+                elif "ErrorFromControler" in message1 or "Error" in message1:
+                    logging.error(f"Ошибка гравировки: {message1}")
+                    print(f"Ошибка гравировки: {message1}")
                     print("Оборудование отключено Ждем данные...")
                     toggle_button.config(state="normal")
                     if stop == True:
                         print (f"нажата кнопка стоп")
                         logging.info(f"Press button stop Cycle cutting")
-                        return
-                else:
                     break
-                time.sleep(1)  # Ожидание перед повторной попыткой
-            ####################
 
-            # Проверяем, завершилась ли операция маркировки успешно первая
-            while "MarkingCompletedSuccessfully" not in message1:
-                print("Ожидаем завершения гравировки...")
+                # 5. Если статус не ясен, ждём 1 сек и повторяем
                 time.sleep(1)
-                status_cutting_plm.config(text=f"{i} иттерация завершена", fg="green",font=("Arial", 9))
+                print("Ожидаем завершения гравировки...")
+                print(f"Получаем сообщение {message1}")
 
-            # Если успешно ставим пометку в базе данныхх для серийника
-            if "MarkingCompletedSuccessfully" in message1:         
-                # Помечаем как промаркированный сделт в проверке
-                SQLSerialProvider.updateMark(id_serial, login_user)
-                logging.info(f"Main - Sent 1 to Mark in DB id={id_serial}")
-                SQLSerialProvider.updateMark(id_serial, login_user)
-                SentLog1C.sent_result_To1C(id_serial)
+            # Очищаем message1 после выхода из цикла
+            message1 = ""
 
-                # Получаем кол-во отмаркированных деталей для прогресс бара
-                marked_count = SQLSerialProvider.marked_serial(OrderID, seril_id)
-                # Преобразуем значение в целое число
-                marked_count = int(marked_count) if marked_count else 0  # Если значение пустое, то устанавливаем 0 как дефолт
-                progress["value"] = marked_count  # Установите значение прогресбара
-                progress_label.config(text=f"Отмарикрованных детелей: {marked_count}. \n Неотмарикрованных деталей: {totalforprogress - marked_count} \n Всего деталей: {totalforprogress}")
-
-                status_cutting_plm.config(text=f"Гравировка {i} детали завершена", fg="green",font=("Arial", 9))
-
+            if marking_success:
+                logging.info(f"Деталь {i} успешно промаркирована!")
+                status_cutting_plm.config(text=f"Гравировка {i} завершена", fg="green")
             else:
-                logging.warning(f"Main - Error Can't Sent 1 to Mark in DB id={id_serial}")
-            
+                logging.warning(f"Гравировка детали {i} не удалась!")
+                # Дополнительные действия при ошибке...
+            ##########################*****
+
             
 
 
@@ -841,7 +897,7 @@ def cutting_processPLM(new_value):
             # Поле Серия
             some_data_cmd = str.encode(f"Set new Value", encoding='UTF-8')
             win32file.WriteFile(pipe, some_data_cmd)
-            some_data_cmd = str.encode(f"Marking\\Series.Text={Seria}", encoding='UTF-8')
+            some_data_cmd = str.encode(f"Marking\\Series.Text=S {Seria}", encoding='UTF-8')
             win32file.WriteFile(pipe, some_data_cmd)
             
 
@@ -888,7 +944,7 @@ def cutting_processPLM(new_value):
             # Поле Number код
             some_data_cmd = str.encode(f"Set new Value", encoding='UTF-8')
             win32file.WriteFile(pipe, some_data_cmd)
-            some_data_cmd = str.encode(f"Marking\\NumberSerial.Text={NumberSerial}", encoding='UTF-8')
+            some_data_cmd = str.encode(f"Marking\\NumberSerial.Text=N {NumberSerial}", encoding='UTF-8')
             win32file.WriteFile(pipe, some_data_cmd)
 
             # Читаем ответ из pipe
@@ -920,53 +976,79 @@ def cutting_processPLM(new_value):
             print(f"*****-{message1}")
             time.sleep(1)
             
-            ####################
-            while True:  
+            ##########################*****
+            # Очищаем message1 перед началом ожидания
+            message1 = ""
+
+            # Таймаут ожидания гравировки (секунды)
+            timeout = 120  
+            start_time = time.time()
+
+            # Флаг успешного завершения
+            marking_success = False
+
+            logging.info("Ожидание завершения гравировки...")
+
+            while True:
+                # 1. Проверяем таймаут
+
+                """
+                if time.time() - start_time > timeout:
+                    logging.error("Таймаут ожидания гравировки! Превышено время ожидания.")
+                    print(f"Таймаут ожидания гравировки! Превышено время ожидания.")
+                    status_cutting_plm.config(text="Ошибка: таймаут гравировки", fg="red")
+                    break
+                """
                 
-                # Симуляция получения данных
-                # response, data = win32file.ReadFile(pipe, 4096)  # 4096 - размер буфера
-                #if response == 0:  # NO_ERROR
-                #decoded_data = data.decode('UTF-8')  # Декодируем в строку
-                #print("Ответ от сервера:", decoded_data)
-                if "ErrorFromControler" in message1:  # Если нет ошибок. все хорошо идем дальше
-                    status_cutting_plm.config(text=f"Нет соединения с маркировщиком", fg="red",font=("Arial", 9))
+                # 2. Получаем актуальный статус (замените на ваш способ чтения данных)
+                # Пример: message1 = read_from_serial_port()  
+                # Или: message1 = get_latest_marking_status()  
+
+                # 3. Проверяем успешное завершение
+                if "CompletedSuccessfully" in message1 or message1.find("CompletedSuccessfully") != -1:
+                    logging.info(f"Гравировка завершена успешно! Ответ оборудования: {message1}")
+                    print(f"Гравировка завершена успешно! Ответ оборудования: {message1}")
+                    marking_success = True
+
+                    # Обновляем статус
+                    status_cutting_plm.config(text=f"{i} иттерация завершена", fg="green", font=("Arial", 9))
+                    
+                    # Помечаем как промаркированный сделт в проверке
+                    SQLSerialProvider.updateMark(id_serial, login_user)
+                    logging.info(f"Main - Sent 1 to Mark in DB id={id_serial}")
+                    time.sleep(1)
+                    SentLog1C.sent_result_To1C(id_serial)
+                    
+                    status_cutting_plm.config(text=f"Гравировка {i} детали завершена", fg="green", font=("Arial", 9))
+                    break
+
+                # 4. Проверяем ошибки
+                elif "ErrorFromControler" in message1 or "Error" in message1:
+                    logging.error(f"Ошибка гравировки: {message1}")
+                    print(f"Ошибка гравировки: {message1}")
                     print("Оборудование отключено Ждем данные...")
                     toggle_button.config(state="normal")
                     if stop == True:
                         print (f"нажата кнопка стоп")
                         logging.info(f"Press button stop Cycle cutting")
-                        return
-                else:
-                    print("Оборудование отключено Ждем данные...")
                     break
-                    
-                time.sleep(1)  # Ожидание перед повторной попыткой
-            ####################
 
-            # Проверяем, завершилась ли операция маркировки успешно первая
-            while "MarkingCompletedSuccessfully" not in message1:
-                print("Ожидаем завершения гравировки...")
+                # 5. Если статус не ясен, ждём 1 сек и повторяем
                 time.sleep(1)
+                print("Ожидаем завершения гравировки...")
+                print(f"Получаем сообщение {message1}")
 
-            # Если успешно ставим пометку в базе данныхх для серийника
-            if "MarkingCompletedSuccessfully" in message1:         
-                # Помечаем как промаркированный сделт в проверке
-                SQLSerialProvider.updateMark(id_serial, login_user)
-                logging.info(f"Main - Sent 1 to Mar in DB id={id_serial}")
-                SQLSerialProvider.updateMark(id_serial, login_user)
-                SentLog1C.sent_result_To1C(id_serial)
+            # Очищаем message1 после выхода из цикла
+            message1 = ""
 
-                # Получаем кол-во отмаркированных деталей для прогресс бара
-                marked_count = SQLSerialProvider.marked_serial(OrderID, seril_id)
-                # Преобразуем значение в целое число
-                marked_count = int(marked_count) if marked_count else 0  # Если значение пустое, то устанавливаем 0 как дефолт
-                progress["value"] = marked_count  # Установите значение прогресбара
-                progress_label.config(text=f"Отмарикрованных детелей: {marked_count}. \n Неотмарикрованных деталей: {totalforprogress - marked_count} \n Всего деталей: {totalforprogress}")
-
-
-                status_cutting_plm.config(text=f"Гравировка {i} детали завершена", fg="green",font=("Arial", 9))
+            if marking_success:
+                logging.info(f"Деталь {i} успешно промаркирована!")
+                status_cutting_plm.config(text=f"Гравировка {i} завершена", fg="green")
             else:
-                logging.warning(f"Main - Error Can't Sent 1 to Mark in DB id={id_serial}")
+                logging.warning(f"Гравировка детали {i} не удалась!")
+                # Дополнительные действия при ошибке...
+            ##########################*****
+
             
             
             
